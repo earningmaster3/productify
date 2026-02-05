@@ -2,7 +2,7 @@ import { db } from "./index";
 import { eq } from "drizzle-orm";
 import {
     users, products, comments, usersRelations, productsRelations,
-    commentsRelations, type NewUser, type NewProduct, type NewComment, type User, type product, type comment
+    commentsRelations, type NewUser, type NewProduct, type NewComment, type User, type Product, type Comments
 } from "./schema";
 
 //User queries
@@ -18,7 +18,6 @@ export const updateuser = async (id: string, data: Partial<NewUser>) => {
 }
 
 export const getUserById = async (id: string) => {
-
     return await db.select().from(users).where(eq(users.id, id))
 
 }
@@ -42,7 +41,22 @@ export const getAllProducts = async () => {
     return await db.query.products.findMany({
         with: {
             user: true,
-            comments: true
-        }
+        },
+        orderBy: (products, { desc }) => [desc(products.createdAt)], //desc means it will show the latest products first
     })
 }
+
+export const getProductById = async (id: string) => {
+    return db.query.products.findFirst({
+        where: eq(products.id, id),
+        with: {
+            user: true,
+            comments: {
+                with: { user: true },
+                orderBy: (comments, { desc }) => [desc(comments.createdAt)],
+            },
+        },
+    });
+};
+
+export const update

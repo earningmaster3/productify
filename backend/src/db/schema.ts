@@ -41,34 +41,34 @@ export const comments = pgTable("comments", {
 // 🔴 `many()` means one user can have multiple related records
 
 export const usersRelations = relations(users, ({ many }) => ({
-  products: many(products), // 🔴 One user → many products
-  comments: many(comments), // 🔴 One user → many comments
+    products: many(products), // 🔴 One user → many products
+    comments: many(comments), // 🔴 One user → many comments
 }));
 
 // Products Relations: a product belongs to one user and can have many comments
 // `one()` means a single related record, `many()` means multiple related records
 
 export const productsRelations = relations(products, ({ one, many }) => ({
-  comments: many(comments), // 🔴 One product → many comments
-  // `fields` = the foreign key column in THIS table (products.userId)
-  // `references` = the primary key column in the RELATED table (users.id)
-  user: one(users, { fields: [products.userId], references: [users.id] }), // one product → one user
+    comments: many(comments), // 🔴 One product → many comments
+    // `fields` = the foreign key column in THIS table (products.userId)
+    // `references` = the primary key column in the RELATED table (users.id)
+    user: one(users, { fields: [products.userId], references: [users.id] }), // one product → one user
 }))
 
 // Comments Relations: a comment belongs to one user and one product
 
-export const commentsRelations = relations(comments, ({one})=>{
+export const commentsRelations = relations(comments, ({ one }) => {
     return {
-        user: one(users, {fields:[comments.userId], references:[users.id]}), //-> one comment -> one user
-        product: one(products, {fields:[comments.productId], references:[products.id]}) // one product -> one comment
+        user: one(users, { fields: [comments.userId], references: [users.id] }), //-> one comment -> one user
+        product: one(products, { fields: [comments.productId], references: [products.id] }) // one product -> one comment
     }
 })
 
 //type inference for tables 
 
-export type User =  typeof users.$inferSelect;
-export type product = typeof products.$inferSelect;
-export type comment = typeof comments.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type Product = typeof products.$inferSelect;
+export type Comments = typeof comments.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type NewComment = typeof comments.$inferInsert;
 export type NewUser = typeof users.$inferInsert;
