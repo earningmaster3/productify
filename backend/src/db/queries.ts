@@ -1,5 +1,5 @@
 import { db } from "./index";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import {
     users, products, comments, usersRelations, productsRelations,
     commentsRelations, type NewUser, type NewProduct, type NewComment, type User, type Product, type Comments
@@ -59,4 +59,60 @@ export const getProductById = async (id: string) => {
     });
 };
 
-export const update
+export const getProductByUserId = async (userId: string) => {
+    return db.query.products.findFirst({
+        where: eq(products.userId, userId),
+        with: {
+            user: true,
+            comments: {
+                with: {
+                    user: true,
+                    orderBy: (comments, { desc }) => [desc(comments.createdAt)],
+                }
+            }
+        }
+    })
+};
+
+export const updateProduct = async (id: string, data: Partial<NewProduct>) => {
+    const existingProduct = await getProductById(id);
+    if (!existingProduct) {
+        throw new Error(`Product with id ${id} not found`);
+    }
+
+    const [product] = await db.update(products).set(data).where(eq(products.id, id)).returning();
+    return product;
+};
+
+export const deleteProduct = async (id: string) => {
+    const existingProduct = await getProductById(id);
+    if (!existingProduct) {
+        throw new Error(`Product with id ${id} not found`);
+    }
+
+    const [product] = await db.delete(products).where(eq(products.id, id)).returning();
+    return product;
+};
+
+// COMMENT QUERIES
+export const createComment = async (data: NewComment) => {
+    const [comment] = await db.insert(comments).values(data).returning();
+    return comment;
+};
+
+export const deleteComment = async (id: string) => {
+    const existingComment = await getCommentById(id);
+    if (!existingComment) {
+        throw new Error(`Comment with id ${id} not found`);
+    }
+
+    const [comment] = await db.delete(comments).where(eq(comments.id, id)).returning();
+    return comment;
+};
+
+export const getCommentById = async (id: string) => {
+    return db.query.comments.findFirst({
+        where: eq(comments.id, id),
+        with: { user: true },
+    });
+};
