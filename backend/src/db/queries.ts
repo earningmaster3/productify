@@ -5,22 +5,27 @@ import {
     commentsRelations, type NewUser, type NewProduct, type NewComment, type User, type Product, type Comments
 } from "./schema";
 
-//User queries
-
+// USER QUERIES
 export const createUser = async (data: NewUser) => {
-    const [user] = await db.insert(users).values(data).returning();
-    return user;
-}
-
-export const updateuser = async (id: string, data: Partial<NewUser>) => {
-    const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
-    return user;
-}
+  const [user] = await db.insert(users).values(data).returning();
+  return user;
+};
 
 export const getUserById = async (id: string) => {
-    return await db.select().from(users).where(eq(users.id, id))
+  return db.query.users.findFirst({ where: eq(users.id, id) });
+};
 
-}
+export const updateUser = async (id: string, data: Partial<NewUser>) => {
+  const existingUser = await getUserById(id);
+  if (!existingUser) {
+    throw new Error(`User with id ${id} not found`);
+  }
+
+  const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+  return user;
+};
+
+// upsert => create or update
 
 export const upsertUser = async (data: NewUser) => {
     const existingUser = await getUserById(data.id);
