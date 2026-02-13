@@ -7,7 +7,13 @@ import Productpage from './pages/Productpage'
 import Editpage from './pages/Editpage'
 import Navbar from './components/Navbar'
 import Trialpage from './pages/Trialpage'
+import useUserSync from './hooks/useUserSync';
+import useAuthReq from './hooks/useAuthReq';
 const App = () => {
+
+   useUserSync();
+    useAuthReq();
+ 
   return (
     <div className='min-h-screen bg-base-100'>
       {/* <SignedOut>
