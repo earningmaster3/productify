@@ -1,30 +1,25 @@
-import { Router } from 'express';
-import { requireAuth } from '@clerk/express';
-import * as productControllers from '../controllers/productControllers';
+import { Router } from "express";
+import * as productController from "../controllers/productControllers";
+import { requireAuth } from "@clerk/express";
 
+const router = Router();
 
-const productRouter = Router();
+// GET /api/products => Get all products (public)
+router.get("/", productController.getAllProducts);
 
-//get api => get all products (public route)
-productRouter.get("/", productControllers.getAllProducts);
+// GET /api/products/my - Get current user's products (protected)
+router.get("/my", requireAuth, productController.getMyProducts);
 
-//get api/products/user => get products by current user (protected route)
-productRouter.get("/:id", productControllers.getProductById);
+// GET /api/products/:id - Get single product by ID (public)
+router.get("/:id", productController.getProductById);
 
-//get api/products/user/:id => get products by user id (public route)
-productRouter.get("/user/current", requireAuth, productControllers.getProductsByCurrentUser);
+// POST /api/products - Create new product (protected)
+router.post("/", requireAuth, productController.createProduct);
 
-//get api/products/user/current => get products by current user (protected route)
-productRouter.get("/user/:id", productControllers.getProductByUserId);
+// PUT /api/products/:id - Update product (protected - owner only)
+router.put("/:id", requireAuth, productController.updateProduct);
 
-//post api/products => create a new product (protected route)
-productRouter.post("/", requireAuth, productControllers.createProduct);
+// DELETE /api/products/:id - Delete product (protected - owner only)
+router.delete("/:id", requireAuth, productController.deleteProduct);
 
-//put api/products/:id => update a product (protected route)
-productRouter.put("/:id", requireAuth, productControllers.updateProduct);
-
-//delete api/products/:id => delete a product (protected route)
-productRouter.delete("/:id", requireAuth, productControllers.deleteProduct);
-
-// Define product-related routes here
-export default productRouter;
+export default router;
