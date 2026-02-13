@@ -6,7 +6,7 @@ import Createpage from './pages/Createpage'
 import Productpage from './pages/Productpage'
 import Editpage from './pages/Editpage'
 import Navbar from './components/Navbar'
-
+import Trialpage from './pages/Trialpage'
 const App = () => {
   return (
     <div className='min-h-screen bg-base-100'>
@@ -21,6 +21,7 @@ const App = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
+          <Route path="/trial" element={<Trialpage />} />
           <Route path="/profile" element={<Profilepage />} />
           <Route path="/create" element={<Createpage />} />
           <Route path="/product/:id" element={<Productpage />} />
