@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { use } from 'react'
 import { Link } from 'react-router'
 import { ShoppingBagIcon, PlusIcon, UserIcon } from "lucide-react";
 import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/clerk-react";
 import ThemeSelector from './ThemeSelector';
+import useUserSync from '../hooks/useUserSync';
 
 const Navbar = () => {
-    const { isSignedIn } = useAuth();
+    useUserSync();
     return (
         <div className='navbar bg-base-300'>
             <div className="max-w-5xl mx-auto w-full px-4 flex justify-between items-center">

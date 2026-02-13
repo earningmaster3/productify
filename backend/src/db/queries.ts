@@ -24,7 +24,7 @@ export const getUserById = async (id: string) => {
 
 export const upsertUser = async (data: NewUser) => {
     const existingUser = await getUserById(data.id);
-    if (existingUser) {
+    if (existingUser.length > 0) {
         return await updateuser(data.id, data);
     }
     return await createUser(data);
