@@ -1,147 +1,133 @@
+import type { Request, Response } from "express";
 
-import type { Request, Response } from 'express';
-import * as queries from '../db/queries';
-import { getAuth } from '@clerk/express';
+import * as queries from "../db/queries";
+import { getAuth } from "@clerk/express";
 
-//get all products (public route)
-
+// Get all products (public)
 export const getAllProducts = async (req: Request, res: Response) => {
-    try {
-        const products = await queries.getAllProducts();
-        res.status(200).json({ products });
+  try {
+    const products = await queries.getAllProducts();
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error getting products:", error);
+    res.status(500).json({ error: "Failed to get products" });
+  }
+};
 
-    } catch (err: any) {
-        console.error("getAllProducts error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
-    }
-}
+// Get products by current user (protected)
+export const getMyProducts = async (req: Request, res: Response) => {
+  try {
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-// get products by id (public route)
+    const products = await queries.getProductByUserId(userId);
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error getting user products:", error);
+    res.status(500).json({ error: "Failed to get user products" });
+  }
+};
 
-export const getProductById = async (req: Request, res: Response) => {
-    try {
-        const idRaw = req.params.id;
-        const id = Array.isArray(idRaw) ? idRaw[0] : idRaw;
-        if (!id || typeof id !== 'string') return res.status(400).json({ message: "Product id is required" });
+// Get single product by ID (public)
+export const getProductById = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const { id } = req.params;
+    const product = await queries.getProductById(id);
 
-        const product = await queries.getProductById(id);
-        if (!product) {
-            return res.status(404).json({ message: "Product not found" });
-        }
-        res.status(200).json({ product });
+    if (!product) return res.status(404).json({ error: "Product not found" });
 
-    } catch (err: any) {
-        console.error("getProductById error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
-    }
-}
-//get products by user id  (public route)
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("Error getting product:", error);
+    res.status(500).json({ error: "Failed to get product" });
+  }
+};
 
-export const getProductByUserId = async (req: Request, res: Response) => {
-    try {
-        const idRaw = req.params.id;
-        const id = Array.isArray(idRaw) ? idRaw[0] : idRaw;
-        if (!id || typeof id !== 'string') return res.status(400).json({ message: "User id is required" });
-
-        const products = await queries.getProductByUserId(id);
-        res.status(200).json({ products });
-    } catch (err: any) {
-        console.error("getProductByUserId error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
-    }
-}
-
-//get products by current user (proteceted route)
-
-export const getProductsByCurrentUser = async (req: Request, res: Response) => {
-    try {
-        const auth = getAuth(req);
-        const userIdRaw = auth.userId;
-        const userId = Array.isArray(userIdRaw) ? userIdRaw[0] : userIdRaw;
-        if (!userId || typeof userId !== 'string') {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-        const products = await queries.getProductByUserId(userId);
-        res.status(200).json({ products });
-    } catch (err: any) {
-        console.error("getProductsByCurrentUser error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
-    }
-}
-
-//create a new product (protected route)
-
+// Create product (protected)
 export const createProduct = async (req: Request, res: Response) => {
-    try {
-        const auth = getAuth(req);
-        const userIdRaw = auth.userId;
-        const userId = Array.isArray(userIdRaw) ? userIdRaw[0] : userIdRaw;
-        if (!userId || typeof userId !== 'string') {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
+  try {
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-        const { title, description, imageUrl } = req.body as { title?: unknown; description?: unknown; imageUrl?: unknown };
-        if (typeof title !== 'string' || typeof description !== 'string' || typeof imageUrl !== 'string') {
-            return res.status(400).json({ message: "missing required fields or invalid types" });
-        }
+    const { title, description, imageUrl } = req.body;
 
-        const product = await queries.createProduct({ userId, title, description, imageUrl });
-        res.status(201).json({ product });
-
-    } catch (err: any) {
-        console.error("createProduct error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
+    if (!title || !description || !imageUrl) {
+      res.status(400).json({ error: "Title, description, and imageUrl are required" });
+      return;
     }
-}
 
-//update a product (protected route)
+    const product = await queries.createProduct({
+      title,
+      description,
+      imageUrl,
+      userId,
+    });
 
-export const updateProduct = async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-        const idRaw = req.params.id;
-        const id = Array.isArray(idRaw) ? idRaw[0] : idRaw;
-        if (!id) return res.status(400).json({ message: "Product id is required" });
-        const { title, description, imageUrl } = req.body;
-        const existingProduct = await queries.getProductById(id);
-        if (!existingProduct) {
-            return res.status(404).json({ message: "Product not found" });
-        }
-        if (existingProduct.userId !== userId) {
-            return res.status(403).json({ message: "You can only update your own product" });
-        }
-        const updatedProduct = await queries.updateProduct(id, { title, description, imageUrl });
-        res.status(200).json({ product: updatedProduct });
-    } catch (err: any) {
-        console.error("updateProduct error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
+    res.status(201).json(product);
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ error: "Failed to create product" });
+  }
+};
+
+// Update product (protected - owner only)
+export const updateProduct = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { id } = req.params;
+    const { title, description, imageUrl } = req.body;
+
+    // Check if product exists and belongs to user
+    const existingProduct = await queries.getProductById(id);
+    if (!existingProduct) {
+      res.status(404).json({ error: "Product not found" });
+      return;
     }
-}
 
-//delete a product (protected route)
-export const deleteProduct = async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.status(401).json({ message: "  Unauthorized" });
-        };
-        const idRaw = req.params.id;
-        const id = Array.isArray(idRaw) ? idRaw[0] : idRaw;
-        if (!id || typeof id !== 'string') return res.status(400).json({ message: "Product id is required" });
-        const existingProduct = await queries.getProductById(id);
-        if (!existingProduct) {
-            return res.status(404).json({ message: " Product not found" });
-        }
-        if (existingProduct.userId !== userId) {
-            return res.status(403).json({ message: "You can only delete your own product" });
-        }
-        const deletedProduct = await queries.deleteProduct(id);
-        res.status(200).json({ message: "Product deleted successfully", deletedProduct });
-    } catch (err: any) {
-        console.error("deleteProduct error:", err);
-        return res.status(500).json({ message: err?.message || "Internal Server Error" });
+    if (existingProduct.userId !== userId) {
+      res.status(403).json({ error: "You can only update your own products" });
+      return;
     }
-}
+
+    const product = await queries.updateProduct(id, {
+      title,
+      description,
+      imageUrl,
+    });
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+};
+
+// Delete product (protected - owner only)
+export const deleteProduct = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { id } = req.params;
+
+    // Check if product exists and belongs to user
+    const existingProduct = await queries.getProductById(id);
+    if (!existingProduct) {
+      res.status(404).json({ error: "Product not found" });
+      return;
+    }
+
+    if (existingProduct.userId !== userId) {
+      res.status(403).json({ error: "You can only delete your own products" });
+      return;
+    }
+
+    await queries.deleteProduct(id);
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+};

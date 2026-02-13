@@ -7,6 +7,7 @@ export const syncUser = async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         if (!userId) {
+            console.log("Unauthorized access attempt to syncUser");
             return res.status(401).json({ message: "Unauthorized" });
         }
         // Fetch user details from clerk

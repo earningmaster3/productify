@@ -1,4 +1,4 @@
-import { pgTable, PgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { Relation, relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
@@ -7,7 +7,7 @@ export const users = pgTable("users", {
     name: text("name").notNull(),
     imageUrl: text("image_url"),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-    upadtedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 })
 
 export const products = pgTable("products", {
