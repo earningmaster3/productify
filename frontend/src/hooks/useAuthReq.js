@@ -4,7 +4,7 @@ import api from "../lib/axios";
 
 let isInterceptorRegistered = false;
 
-function useAuthReq() {
+const useAuthReq = () => {
   const { isSignedIn, getToken, isLoaded } = useAuth();
   // include the token to the request headers
   useEffect(() => {
