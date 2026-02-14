@@ -1,5 +1,5 @@
 import { SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/clerk-react'
-import { Routes, Route, Navigate } from 'react-router'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Homepage from './pages/Homepage'
 import Profilepage from './pages/Profilepage'
 import Createpage from './pages/Createpage'
