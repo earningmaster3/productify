@@ -5,8 +5,7 @@ import {
     commentsRelations, type NewUser, type NewProduct, type NewComment, type User, type Product, type Comments
 } from "./schema";
 
-//User queries
-
+// USER QUERIES
 export const createUser = async (data: NewUser) => {
     const [user] = await db.insert(users).values(data).returning();
     return user;
