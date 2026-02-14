@@ -8,7 +8,7 @@ import {
     updateProduct,
 } from "../lib/api";
 
-export const usegetProducts = () => {
+export const useProducts = () => {
     const result = useQuery({ queryKey: ["products"], queryFn: getAllProducts });
     return result;
 };
