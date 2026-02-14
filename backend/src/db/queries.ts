@@ -7,30 +7,24 @@ import {
 
 // USER QUERIES
 export const createUser = async (data: NewUser) => {
-  const [user] = await db.insert(users).values(data).returning();
-  return user;
-};
-
-export const getUserById = async (id: string) => {
-  return db.query.users.findFirst({ where: eq(users.id, id) });
-};
+    const [user] = await db.insert(users).values(data).returning();
+    return user;
+}
 
 export const updateUser = async (id: string, data: Partial<NewUser>) => {
-  const existingUser = await getUserById(id);
-  if (!existingUser) {
-    throw new Error(`User with id ${id} not found`);
-  }
+    const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+    return user;
+}
 
-  const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
-  return user;
-};
-
-// upsert => create or update
+export const getUserById = async (id: string) => {
+    const [user] =await db.select().from(users).where(eq(users.id, id))
+    return user;
+}
 
 export const upsertUser = async (data: NewUser) => {
     const existingUser = await getUserById(data.id);
-    if (existingUser.length > 0) {
-        return await updateuser(data.id, data);
+    if (existingUser) {
+        return await updateUser(data.id, data);
     }
     return await createUser(data);
 }
