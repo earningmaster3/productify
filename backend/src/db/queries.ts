@@ -12,20 +12,20 @@ export const createUser = async (data: NewUser) => {
     return user;
 }
 
-export const updateuser = async (id: string, data: Partial<NewUser>) => {
+export const updateUser = async (id: string, data: Partial<NewUser>) => {
     const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
     return user;
 }
 
 export const getUserById = async (id: string) => {
-    return await db.select().from(users).where(eq(users.id, id))
-
+    const [user] =await db.select().from(users).where(eq(users.id, id))
+    return user;
 }
 
 export const upsertUser = async (data: NewUser) => {
     const existingUser = await getUserById(data.id);
-    if (existingUser.length > 0) {
-        return await updateuser(data.id, data);
+    if (existingUser) {
+        return await updateUser(data.id, data);
     }
     return await createUser(data);
 }
