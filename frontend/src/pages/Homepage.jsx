@@ -57,7 +57,7 @@ const Homepage = () => {
                     <PackageIcon className="size-5 text-primary" />
                     All Products
                 </h2>
-                {products.length === 0 ? (
+                {!products || products.length === 0 ? (
 
                     <div className="card bg-base-300">
                         <div className="card-body items-center text-center py-16">
