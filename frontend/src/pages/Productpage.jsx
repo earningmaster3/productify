@@ -6,13 +6,21 @@ import { useParams, Link, useNavigate } from "react-router";
 import CommentsSection from "../components/CommentsSection.jsx";
 
 const Productpage = () => {
+    
     const { id } = useParams();
     const { userId } = useAuth();
     const navigate = useNavigate();
     const { data: product, isLoading, error } = useProduct(id);
     const deleteProduct = useDeleteProduct();
 
+    // console.log(product.comments);
+    // console.log("Current user ID:", userId);
+    // console.log("Product's user ID:", product.userId);
+    // console.log(product);
 
+
+    if (isLoading) return <LoadingSpinner />;
+    
     if (error || !product) {
         return (
             <div className="card bg-base-300 max-w-md mx-auto">
@@ -26,7 +34,7 @@ const Productpage = () => {
         );
     }
 
-    if (isLoading) return <LoadingSpinner />;
+
 
     //check who signed in (the user) is same as the product creator owner
     const isOwner = userId === product.userId;
@@ -118,7 +126,11 @@ const Productpage = () => {
             {/* Comments */}
             <div className="card bg-base-300">
                 <div className="card-body">
-                    <CommentsSection productId={product.id} currentUserId={userId} />
+                    <CommentsSection
+                        productId={product.id}
+                        comments={product.comments} currentUserId={userId} 
+                    />
+                    
                 </div>
             </div>
         </div>

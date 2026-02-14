@@ -1,5 +1,5 @@
 import { SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/clerk-react'
-import { Routes, Route } from 'react-router'
+import { Routes, Route, Navigate } from 'react-router'
 import Homepage from './pages/Homepage'
 import Profilepage from './pages/Profilepage'
 import Createpage from './pages/Createpage'
@@ -9,10 +9,17 @@ import Navbar from './components/Navbar'
 import Trialpage from './pages/Trialpage'
 import useUserSync from './hooks/useUserSync';
 import useAuthReq from './hooks/useAuthReq';
+
 const App = () => {
 
-   useUserSync();
-    useAuthReq();
+  const {isClerkLoaded, isSignedIn } = useAuthReq();
+
+  useUserSync();
+
+  if(!isClerkLoaded) {
+    return <div className='min-h-screen flex items-center justify-center'><span className="loading loading-spinner loading-lg"></span></div>
+  }
+   
  
   return (
     <div className='min-h-screen bg-base-100'>
@@ -28,10 +35,10 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/trial" element={<Trialpage />} />
-          <Route path="/profile" element={<Profilepage />} />
-          <Route path="/create" element={<Createpage />} />
+          <Route path="/profile" element={isSignedIn ?<Profilepage />: <Navigate to={"/"}/>} />
+          <Route path="/create" element={isSignedIn ?<Createpage />: <Navigate to={"/"}/>} />
           <Route path="/product/:id" element={<Productpage />} />
-          <Route path="/edit/:id" element={<Editpage />} />
+          <Route path="/edit/:id" element={isSignedIn ?<Editpage />: <Navigate to={"/"}/>} />
         </Routes>
       </main>
     </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useProducts } from '../hooks/useProducts.js';
 import { Link } from 'react-router-dom';
 import { PackageIcon, SparklesIcon } from "lucide-react";
